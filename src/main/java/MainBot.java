@@ -13,7 +13,7 @@ import storage.IDataStorage;
 
 public class MainBot extends TelegramLongPollingBot {
 
-    private final String BOT_TOKEN = "1351149754:AAHU9LIWqcdRJF35sNHfPkIBoM150kmFO44";
+    private final String BOT_TOKEN = System.getenv("TOKEN");
     private final String BOT_NAME = "poker_java_bot";
 
     private static PokerDealer pokerDealer;

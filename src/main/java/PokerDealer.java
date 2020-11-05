@@ -14,9 +14,7 @@ public class PokerDealer {
 
     IDataStorage dataStorage;
 
-    PokerDealer(IDataStorage dataStorage) {
-        this.dataStorage = dataStorage;
-    }
+    PokerDealer(IDataStorage dataStorage) { this.dataStorage = dataStorage; }
 
     /* Создать игру */
     public GameAnswer createGame(Integer userId) {

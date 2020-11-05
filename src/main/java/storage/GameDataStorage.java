@@ -8,10 +8,15 @@ import java.util.ArrayList;
 /* Хранилище данных с методами получения информации */
 public class GameDataStorage implements IDataStorage {
 
+    private DataBase dataBase = new DataBase();
     private long gameCount = 0;
     private final HashMap<String, Long> games = new HashMap<>();
     private final HashMap<Long, ArrayList<Integer>> gamePlayers = new HashMap<>();
     private final HashMap<Integer, User> users = new HashMap<>();
+
+    public GameDataStorage() {
+        dataBase.connect();
+    }
 
 
     @Override
