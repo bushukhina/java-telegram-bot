@@ -2,14 +2,12 @@ import game.GameAnswer;
 import game.User;
 import storage.IDataStorage;
 
-import java.io.Console;
 import java.util.ArrayList;
 import java.util.UUID;
 
 /*
 * Диллер покерной игры
-* Создает игры и соединяет игроков
-* Ведет игру
+* Отвечает на все запросы пользователей
 * */
 public class PokerDealer {
 
@@ -41,6 +39,13 @@ public class PokerDealer {
         }
     }
 
+    /* Сделать ход */
+    public GameAnswer attendGame(long userId, String[] args) {
+
+        return null;
+    }
+
+    /* Сформировать ответ с заданным текстом */
     public GameAnswer answerByDefault(String message) {
         return new GameAnswer(message, new ArrayList<String>(),"");
     }
@@ -68,19 +73,13 @@ public class PokerDealer {
         String fistName = user != null ? user.firstName: userId.toString();
         GameAnswer answ = new GameAnswer(
                 null,
-                GetGameMambersChatIds(gameId),
+                GetGameMembersChatIds(gameId),
                 "Пользователь "+ fistName +" присоединился к игре");
         return answ;
     }
 
-    /* Сделать ход */
-    public GameAnswer attendGame(long userId, String[] args) {
-
-        return null;
-    }
-
     /* Получаем чаты в которые нужно отправить общие оповедения */
-    private ArrayList<String> GetGameMambersChatIds(Long gameId) {
+    private ArrayList<String> GetGameMembersChatIds(Long gameId) {
         ArrayList<Integer> gamePlayerIds = dataStorage.getGamePlayerIds(gameId);
         ArrayList<String> codes = new ArrayList<>();
         for (Integer userId : gamePlayerIds) {

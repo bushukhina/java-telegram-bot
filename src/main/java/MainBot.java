@@ -11,6 +11,9 @@ import org.telegram.telegrambots.exceptions.TelegramApiRequestException;
 import storage.GameDataStorage;
 import storage.IDataStorage;
 
+/*
+* Обертка для связи с телеграмом
+* */
 public class MainBot extends TelegramLongPollingBot {
 
     private final String BOT_TOKEN = System.getenv("TOKEN");
@@ -19,6 +22,7 @@ public class MainBot extends TelegramLongPollingBot {
     private static PokerDealer pokerDealer;
     private static IDataStorage dataStorage;
 
+    /* Запуск и регистрация */
     public static void main(String[] args) {
         ApiContextInitializer.init();
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi();
@@ -33,6 +37,7 @@ public class MainBot extends TelegramLongPollingBot {
         }
     }
 
+    /* Отправка сообщений */
     public void sendMsg(String chatId, String text) {
         if (text == null) {return;}
 
@@ -50,6 +55,7 @@ public class MainBot extends TelegramLongPollingBot {
         }
     }
 
+    /* Обработка входящих сообщений */
     @Override
     public void onUpdateReceived(Update update) {
 
@@ -68,17 +74,19 @@ public class MainBot extends TelegramLongPollingBot {
             GameAnswer answer = pokerDealer.processRequest(message.getFrom().getId(), args);
 
             sendMsg(chatId, answer.messageText);
-            for (String memberChatId : answer.commomMessageReceivers) {
+            for (String memberChatId : answer.commonMessageReceivers) {
                 sendMsg(memberChatId, answer.commonMessageText);
             }
         }
     }
 
+    /* Имя бота для регистрации */
     @Override
     public String getBotUsername() {
         return BOT_NAME;
     }
 
+    /* Токен для регистрации */
     @Override
     public String getBotToken() {
         return BOT_TOKEN;
