@@ -35,15 +35,12 @@ public class MainBot extends TelegramLongPollingBot {
 
     public void sendMsg(String chatId, String text) {
         if (text == null) {return;}
+
         SendMessage sendMessage = new SendMessage();
         sendMessage.enableMarkdown(true);
-
         sendMessage.setChatId(chatId);
-
-        // Будет пересылать сообщение при ответе
-        // sendMessage.setReplyToMessageId(message.getMessageId());
-
         sendMessage.setText(text);
+
         try {
 
             sendMessage(sendMessage);
@@ -67,29 +64,12 @@ public class MainBot extends TelegramLongPollingBot {
 
             String text = message.getText();
             String[] args = text.split(" ");
-            String command = args.length > 0 ? args[0] : text;
-            GameAnswer answ;
 
-            switch (command) {
-                case "/help":
-                    sendMsg(chatId, "В будущем тут появится сообщение с информацией о командах :)");
-                    return;
-                case "/start":
-                    sendMsg(chatId, "Привет, давай сыграем в покер?");
-                    return;
-                case "/create":
-                    answ = pokerDealer.createGame(message.getFrom().getId());
-                    break;
-                case "/join":
-                    answ = pokerDealer.joinGame(message.getFrom().getId(), args);
-                    break;
-                default:
-                    sendMsg(chatId, "text");
-                    return;
-            }
-            sendMsg(chatId, answ.originalUserMessageText);
-            for (String memberChatId : answ.respondTo) {
-                sendMsg(memberChatId, answ.commonMessageText);
+            GameAnswer answer = pokerDealer.processRequest(message.getFrom().getId(), args);
+
+            sendMsg(chatId, answer.messageText);
+            for (String memberChatId : answer.commomMessageReceivers) {
+                sendMsg(memberChatId, answer.commonMessageText);
             }
         }
     }

@@ -3,17 +3,18 @@ package game;
 import java.util.ArrayList;
 
 public class GameAnswer {
-    public ArrayList<String> respondTo;
+    public ArrayList<String> commonMessageReceivers;
     public String commonMessageText;
-    public String originalUserMessageText;
+    public String messageText;
 
     public GameAnswer(
-        ArrayList<String> respondTo,
-        String commonMessageText,
-        String originalUserMessageText
+        String messageText,
+        ArrayList<String> commonMessageReceivers,
+        String commonMessageText
+
     ) {
-        this.respondTo = respondTo;
+        this.messageText = messageText;
+        this.commonMessageReceivers = commonMessageReceivers;
         this.commonMessageText = commonMessageText;
-        this.originalUserMessageText = originalUserMessageText;
     }
 }
