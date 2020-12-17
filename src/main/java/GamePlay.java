@@ -1,14 +1,14 @@
-import storage.IDataStorage;
+import dao.GameDAO;
 
 /*
 * Игровое взаимодействие
 * */
 public class GamePlay {
 
-    IDataStorage dataStorage;
+    GameDAO gameDAO;
 
-    GamePlay(IDataStorage dataStorage) {
-        this.dataStorage = dataStorage;
+    GamePlay(GameDAO gameDAO) {
+        this.gameDAO = gameDAO;
     }
 
 

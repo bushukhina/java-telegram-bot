@@ -1,5 +1,6 @@
+import dao.UserDAO;
+import entities.User;
 import game.GameAnswer;
-import game.User;
 import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.TelegramBotsApi;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
@@ -8,8 +9,7 @@ import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 import org.telegram.telegrambots.exceptions.TelegramApiRequestException;
-import storage.GameDataStorage;
-import storage.IDataStorage;
+import storage.*;
 
 /*
 * Обертка для связи с телеграмом
@@ -20,15 +20,18 @@ public class MainBot extends TelegramLongPollingBot {
     private final String BOT_NAME = "poker_java_bot";
 
     private static PokerDealer pokerDealer;
-    private static IDataStorage dataStorage;
+    private static UserDAO userDAO;
 
     /* Запуск и регистрация */
     public static void main(String[] args) {
         ApiContextInitializer.init();
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi();
 
-        dataStorage = new GameDataStorage();
-        pokerDealer = new PokerDealer(dataStorage);
+        userDAO = new UserDAO();
+        DataBase dataBase = new DataBase();
+        dataBase.connect();
+
+        pokerDealer = new PokerDealer(userDAO);
 
         try {
             telegramBotsApi.registerBot(new MainBot());
@@ -61,10 +64,16 @@ public class MainBot extends TelegramLongPollingBot {
 
         Message message = update.getMessage();
         String chatId = message.getChatId().toString();
-        dataStorage.saveUser(new User(
-                message.getFrom().getId(),
-                chatId,
-                message.getFrom().getFirstName()));
+        int id = message.getFrom().getId();
+
+        if(userDAO.getEntityById(id) == null) {
+            userDAO.save(new User(
+                    id,
+                    chatId,
+                    message.getFrom().getFirstName())
+            );
+        }
+
 
         if (message != null && message.hasText()) {
 

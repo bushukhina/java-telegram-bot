@@ -1,8 +1,12 @@
+import dao.GameDAO;
+import dao.UserDAO;
+import entities.Game;
+import entities.User;
 import game.GameAnswer;
-import game.User;
-import storage.IDataStorage;
+import game.GameState;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /*
@@ -11,9 +15,13 @@ import java.util.UUID;
 * */
 public class PokerDealer {
 
-    IDataStorage dataStorage;
+    UserDAO userDAO;
+    GameDAO gameDAO;
 
-    PokerDealer(IDataStorage dataStorage) { this.dataStorage = dataStorage; }
+    PokerDealer(UserDAO userDAO) {
+        this.userDAO = userDAO;
+        gameDAO = new GameDAO();
+    }
 
     public GameAnswer processRequest(Integer userId, String[] args) {
         String command = args.length > 0 ? args[0] : "";
@@ -52,10 +60,12 @@ public class PokerDealer {
 
     /* Создать игру */
     public GameAnswer createGame(Integer userId) {
-        String uuid= UUID.randomUUID().toString();
-        this.dataStorage.createGame(uuid);
-        long gameId = dataStorage.getGameId(uuid);
-        dataStorage.addUserToGame(userId, gameId);
+        UUID uuid= UUID.randomUUID();
+        int gameId = gameDAO.getAll().size() + 1;
+        Game game = new Game(gameId, uuid, GameState.notStarted);
+        User user = userDAO.getEntityById(userId);
+        game.addUser(user);
+        gameDAO.save(game);
         GameAnswer answ = new GameAnswer(
                 "Вы создали игру с кодом: " + uuid,
                 new ArrayList<String>(), "");
@@ -66,11 +76,14 @@ public class PokerDealer {
     public GameAnswer joinGame(Integer userId, String[] args) {
         // если меньше дувух, кидать ошибку
         String uuid = args[1];
-        long gameId = dataStorage.getGameId(uuid);
-        dataStorage.addUserToGame(userId, gameId);
 
-        User user = dataStorage.getUser(userId);
-        String fistName = user != null ? user.firstName: userId.toString();
+        int gameId = gameDAO.getIdByUUID(java.util.UUID.fromString(uuid));
+        Game game = gameDAO.getEntityById(gameId);
+        User user = userDAO.getEntityById(userId);
+        if (!game.getUsers().contains(user)) {
+            game.addUser(user); //Возможно, эту проверку нужно делать в другом месте
+        }
+        String fistName = user != null ? user.getFirstName(): userId.toString();
         GameAnswer answ = new GameAnswer(
                 null,
                 GetGameMembersChatIds(gameId),
@@ -79,13 +92,13 @@ public class PokerDealer {
     }
 
     /* Получаем чаты в которые нужно отправить общие оповедения */
-    private ArrayList<String> GetGameMembersChatIds(Long gameId) {
-        ArrayList<Integer> gamePlayerIds = dataStorage.getGamePlayerIds(gameId);
+    private ArrayList<String> GetGameMembersChatIds(int gameId) {
+        Game game = gameDAO.getEntityById(gameId);
+        List<User> users = game.getUsers();
         ArrayList<String> codes = new ArrayList<>();
-        for (Integer userId : gamePlayerIds) {
-            User user = dataStorage.getUser(userId);
-            if (user != null) {
-                codes.add(user.chatId);
+        for (User user : users) {
+            if (user != null) { //зачем проверяем?
+                codes.add(user.getChatId());
             }
         }
         return codes;
