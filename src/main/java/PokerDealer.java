@@ -32,6 +32,9 @@ public class PokerDealer {
     }
 
     public void initCards() {
+        if (cardDAO.getAll().size() > 0) {
+            return;
+        }
         List<Card> cardSet= cardHelper.buildCardSet();
         for (Card card: cardSet) {
             cardDAO.save(card);
@@ -77,8 +80,7 @@ public class PokerDealer {
     /* Создать игру */
     public GameAnswer createGame(Integer userId) {
         UUID uuid= UUID.randomUUID();
-        int gameId = gameDAO.getAll().size() + 1;
-        Game game = new Game(gameId, uuid, GameState.notStarted);
+        Game game = new Game(uuid, GameState.notStarted);
         User user = userDAO.getEntityById(userId);
         game.addUser(user);
         gameDAO.save(game);

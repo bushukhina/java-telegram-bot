@@ -16,6 +16,7 @@ import java.util.UUID;
 @Table (name = "game")
 public class Game {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @Type(type="pg-uuid")
     private UUID code;
@@ -37,8 +38,7 @@ public class Game {
 
     protected Game() {}
 
-    public Game(int id, UUID code, GameState state) {
-        this.id = id;
+    public Game(UUID code, GameState state) {
         this.code = code;
         this.state = state;
         users = new ArrayList<>();
