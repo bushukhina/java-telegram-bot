@@ -1,6 +1,8 @@
 package entities;
 
 import game.GameState;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 import org.hibernate.annotations.Type;
 import storage.EnumTypePostgreSql;
 
@@ -21,13 +23,13 @@ public class Game {
     @Type(type = "enum_postgressql")
     private GameState state;
 
-    @ManyToMany (fetch = FetchType.EAGER)
+    @ManyToMany
     @JoinTable (name = "game_users",
         joinColumns = @JoinColumn (name = "game_id"),
         inverseJoinColumns = @JoinColumn (name = "user_id"))
     private List<User> users;
 
-    @ManyToMany (fetch = FetchType.EAGER)
+    @ManyToMany
     @JoinTable (name = "game_cards",
             joinColumns = @JoinColumn (name = "game_id"),
             inverseJoinColumns = @JoinColumn (name = "card_id"))

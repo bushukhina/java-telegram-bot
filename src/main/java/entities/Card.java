@@ -1,6 +1,8 @@
 package entities;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity
@@ -11,19 +13,25 @@ public class Card {
     private String suit;
     private String rank;
 
-    @ManyToOne(optional=false, cascade=CascadeType.ALL)
-    @JoinColumn (name = "user_id")
-    private User user;
+    @ManyToMany
+    @JoinTable(name = "user_cards",
+            joinColumns = @JoinColumn(name = "card_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id"))
+    private List<User> users;
 
-    @ManyToOne(optional=false, cascade=CascadeType.ALL)
-    @JoinColumn (name = "game_id")
-    private Game game;
+    @ManyToMany
+    @JoinTable(name = "game_cards",
+            joinColumns = @JoinColumn(name = "card_id"),
+            inverseJoinColumns = @JoinColumn(name = "game_id"))
+    private List<Game> games;
 
     protected Card() {}
 
     public Card(String suit, String rank) {
         this.suit = suit;
         this.rank = rank;
+        users = new ArrayList<>();
+        games = new ArrayList<>();
     }
 
     public int getId() {
@@ -38,20 +46,20 @@ public class Card {
         return rank;
     }
 
-    public User getUser() { //Если не будет работать, то поменять на int
-        return user;
+    public List<User> getUser() { //Если не будет работать, то поменять на int
+        return users;
     }
 
-    public void setUser(User user) { //Если не будет работать, то поменять на int
-        this.user = user;
+    public void addUser(User user) {
+        users.add(user);
     }
 
-    public Game getGame() { //Если не будет работать, то поменять на int
-        return game;
+    public List<Game> getGames() { //Если не будет работать, то поменять на int
+        return games;
     }
 
-    public void setGame(Game game) { //Если не будет работать, то поменять на int
-        this.game = game;
+    public void addGame(Game game) {
+        games.add(game);
     }
 
     @Override

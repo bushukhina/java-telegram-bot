@@ -32,12 +32,11 @@ public class PokerDealer {
     }
 
     public void initCards() {
-//        THERE !!!!!!!!!!!!!!!!
-//        List<Card> cardSet= cardHelper.buildCardSet();
-//        for (Card card: cardSet) {
-//            cardDAO.save(card);
-//            System.out.println("Card " + card + " is created");
-//        }
+        List<Card> cardSet= cardHelper.buildCardSet();
+        for (Card card: cardSet) {
+            cardDAO.save(card);
+            System.out.println("Card " + card + " is created");
+        }
     }
 
     public GameAnswer processRequest(Integer userId, String[] args) {

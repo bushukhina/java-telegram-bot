@@ -39,6 +39,7 @@ public class DataBase {
             createCardsTable(stmt);
             createGameUsersTable(stmt);
             createGameCardsTable(stmt);
+            createUserCardsTable(stmt);
 
             stmt.close();
         } catch (SQLException e) {
@@ -81,9 +82,7 @@ public class DataBase {
                 "id serial, " +
                 "suit TEXT, " +
                 "rank TEXT," +
-                "user_id int NOT NULL," +
-                "PRIMARY KEY (id)," +
-                "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE);";
+                "PRIMARY KEY (id));";
         stmt.executeUpdate(createCardsTable);
         System.out.println("Table 'cards' successfully created");
     }
@@ -108,5 +107,16 @@ public class DataBase {
                 "FOREIGN KEY (card_id) REFERENCES cards(id) ON UPDATE CASCADE);";
         stmt.executeUpdate(createTable);
         System.out.println("Table 'game_cards' successfully created");
+    }
+
+    private void createUserCardsTable(Statement stmt) throws SQLException {
+        String createTable = "CREATE TABLE IF NOT EXISTS user_cards(" +
+                "user_id INT NOT NULL," +
+                "card_id INT NOT NULL," +
+                "PRIMARY KEY (user_id, card_id)," +
+                "FOREIGN KEY (user_id) REFERENCES users(id) ON UPDATE CASCADE," +
+                "FOREIGN KEY (card_id) REFERENCES cards(id) ON UPDATE CASCADE);";
+        stmt.executeUpdate(createTable);
+        System.out.println("Table 'user_cards' successfully created");
     }
 }

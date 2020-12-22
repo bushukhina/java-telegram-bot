@@ -19,7 +19,10 @@ public class User {
     @Column (name = "isactive")
     private boolean isActive = false;
 
-    @OneToMany (mappedBy = "user", fetch = FetchType.EAGER)
+    @ManyToMany
+    @JoinTable (name = "user_cards",
+            joinColumns = @JoinColumn (name = "user_id"),
+            inverseJoinColumns = @JoinColumn (name = "card_id"))
     private List<Card> cards;
 
     @ManyToMany
