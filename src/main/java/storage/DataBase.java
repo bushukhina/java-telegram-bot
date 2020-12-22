@@ -38,6 +38,7 @@ public class DataBase {
             createUsersTable(stmt);
             createCardsTable(stmt);
             createGameUsersTable(stmt);
+            createGameCardsTable(stmt);
 
             stmt.close();
         } catch (SQLException e) {
@@ -59,6 +60,7 @@ public class DataBase {
                 "state game_state," +
                 "PRIMARY KEY (id));";
         stmt.executeUpdate(createGameTable);
+        System.out.println("Table 'games' successfully created");
     }
 
     private void createUsersTable(Statement stmt) throws SQLException {
@@ -71,6 +73,7 @@ public class DataBase {
                 "isActive BOOLEAN," +
                 "PRIMARY KEY (id));";
         stmt.executeUpdate(createUserTable);
+        System.out.println("Table 'users' successfully created");
     }
 
     private void createCardsTable(Statement stmt) throws SQLException {
@@ -82,6 +85,7 @@ public class DataBase {
                 "PRIMARY KEY (id)," +
                 "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE);";
         stmt.executeUpdate(createCardsTable);
+        System.out.println("Table 'cards' successfully created");
     }
 
     private void createGameUsersTable(Statement stmt) throws SQLException {
@@ -92,5 +96,17 @@ public class DataBase {
                 "FOREIGN KEY (game_id) REFERENCES game(id) ON UPDATE CASCADE," +
                 "FOREIGN KEY (user_id) REFERENCES users(id) ON UPDATE CASCADE);";
         stmt.executeUpdate(createTable);
+        System.out.println("Table 'game_users' successfully created");
+    }
+
+    private void createGameCardsTable(Statement stmt) throws SQLException {
+        String createTable = "CREATE TABLE IF NOT EXISTS game_cards(" +
+                "game_id INT NOT NULL," +
+                "card_id INT NOT NULL," +
+                "PRIMARY KEY (game_id, card_id)," +
+                "FOREIGN KEY (game_id) REFERENCES game(id) ON UPDATE CASCADE," +
+                "FOREIGN KEY (card_id) REFERENCES cards(id) ON UPDATE CASCADE);";
+        stmt.executeUpdate(createTable);
+        System.out.println("Table 'game_cards' successfully created");
     }
 }

@@ -15,6 +15,10 @@ public class Card {
     @JoinColumn (name = "user_id")
     private User user;
 
+    @ManyToOne(optional=false, cascade=CascadeType.ALL)
+    @JoinColumn (name = "game_id")
+    private Game game;
+
     protected Card() {}
 
     public Card(int id, String suit, String rank, User user) {
@@ -42,5 +46,13 @@ public class Card {
 
     public void setUser(User user) { //Если не будет работать, то поменять на int
         this.user = user;
+    }
+
+    public Game getGame() { //Если не будет работать, то поменять на int
+        return game;
+    }
+
+    public void setGame(Game game) { //Если не будет работать, то поменять на int
+        this.game = game;
     }
 }

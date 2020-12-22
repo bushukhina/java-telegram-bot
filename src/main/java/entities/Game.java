@@ -27,6 +27,12 @@ public class Game {
         inverseJoinColumns = @JoinColumn (name = "user_id"))
     private List<User> users;
 
+    @ManyToMany (fetch = FetchType.EAGER)
+    @JoinTable (name = "game_cards",
+            joinColumns = @JoinColumn (name = "game_id"),
+            inverseJoinColumns = @JoinColumn (name = "card_id"))
+    private List<Card> cards;
+
     protected Game() {}
 
     public Game(int id, UUID code, GameState state) {
@@ -34,6 +40,7 @@ public class Game {
         this.code = code;
         this.state = state;
         users = new ArrayList<>();
+        cards = new ArrayList<>();
     }
 
     public int getId() {
@@ -66,6 +73,18 @@ public class Game {
 
     public void deleteUsers() {
         users.clear();
+    }
+
+    public List<Card> getCards() {
+        return cards;
+    }
+
+    public void addCard(Card card) {
+        cards.add(card);
+    }
+
+    public void deleteCards() {
+        cards.clear();
     }
 
     //По мере необходимости можно ещё добавить методов
