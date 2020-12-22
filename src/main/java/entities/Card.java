@@ -21,11 +21,9 @@ public class Card {
 
     protected Card() {}
 
-    public Card(int id, String suit, String rank, User user) {
-        this.id = id;
+    public Card(String suit, String rank) {
         this.suit = suit;
         this.rank = rank;
-        this.user = user;
     }
 
     public int getId() {
@@ -54,5 +52,10 @@ public class Card {
 
     public void setGame(Game game) { //Если не будет работать, то поменять на int
         this.game = game;
+    }
+
+    @Override
+    public String toString() {
+        return rank + suit;
     }
 }

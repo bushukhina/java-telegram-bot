@@ -1,9 +1,12 @@
+import dao.CardDAO;
 import dao.GameDAO;
 import dao.UserDAO;
+import entities.Card;
 import entities.Game;
 import entities.User;
 import game.GameAnswer;
 import game.GameState;
+import helpers.CardHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,10 +20,24 @@ public class PokerDealer {
 
     UserDAO userDAO;
     GameDAO gameDAO;
+    CardDAO cardDAO;
+
+    CardHelper cardHelper = new CardHelper();
 
     PokerDealer(UserDAO userDAO) {
         this.userDAO = userDAO;
         gameDAO = new GameDAO();
+        cardDAO = new CardDAO();
+        initCards();
+    }
+
+    public void initCards() {
+//        THERE !!!!!!!!!!!!!!!!
+//        List<Card> cardSet= cardHelper.buildCardSet();
+//        for (Card card: cardSet) {
+//            cardDAO.save(card);
+//            System.out.println("Card " + card + " is created");
+//        }
     }
 
     public GameAnswer processRequest(Integer userId, String[] args) {
