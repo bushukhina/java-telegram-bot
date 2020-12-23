@@ -70,10 +70,6 @@ public class Card {
 
     @Override
     public String toString() {
-        return "Card{" +
-                "id=" + id +
-                ", suit='" + suit + '\'' +
-                ", rank='" + rank + '\'' +
-                '}';
+        return rank + suit;
     }
 }

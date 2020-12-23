@@ -18,13 +18,13 @@ public class GameDAO implements IController<Game, Integer> {
         return result;
     }
 
-    public int getIdByUUID(UUID uuid) {
+    public Integer getIdByUUID(UUID uuid) {
         Session session = SessionFactoryCreator.getSessionFactory().openSession();
         List<Game> result = (List<Game>) session.createQuery("From Game game where game.code = :code")
                 .setParameter("code", uuid)
                 .list();
         session.close();
-        return result.get(0).getId();
+        return result.size() > 0 ? result.get(0).getId() : null;
     }
 
     @Override

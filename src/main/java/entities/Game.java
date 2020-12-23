@@ -64,16 +64,10 @@ public class Game {
         this.state = state;
     }
 
-    public List<User> getUsers() {
-        return users;
-    }
+    public List<User> getUsers() { return users; }
 
     public void addUser(User user) {
         users.add(user);
-    }
-
-    public void removeUser(User user) {
-        users.remove(user);
     }
 
     public void deleteUsers() {

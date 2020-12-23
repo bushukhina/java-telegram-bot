@@ -49,7 +49,7 @@ public class PokerDealer {
         System.out.println(command);
         switch (command) {
             case "/help":
-                return gamePlay.getDefaultAnswer(userId,"В будущем тут появится сообщение с информацией о командах :)");
+                return getHelpText(userId);
             case "/start":
                 return gamePlay.getDefaultAnswer(userId,"Привет, давай сыграем в покер?");
             case "/create":
@@ -86,17 +86,23 @@ public class PokerDealer {
         // если меньше дувух, кидать ошибку
         String uuid = args[1];
 
-        int gameId = gameDAO.getIdByUUID(java.util.UUID.fromString(uuid));
+        Integer gameId = gameDAO.getIdByUUID(java.util.UUID.fromString(uuid));
+        if (gameId == null) {
+            return gamePlay.getDefaultAnswer(userId, "Некоректный или устаревший код игры");
+        }
         Game game = gameDAO.getEntityById(gameId);
         User user = userDAO.getEntityById(userId);
+        if (user.getGames().size() > 0) {
+            return gamePlay.getDefaultAnswer(userId, "Ты уже участвуешь в другой игре");
+        }
         if (game.getState() != GameState.notStarted) {
-            return gamePlay.getDefaultAnswer(userId, "Невозможно присоединиться к игре, которая уже идет");
+            return gamePlay.getDefaultAnswer(userId, "Невозможно присоединиться. Игра уже идет");
         }
         if (!game.getUsers().contains(user)) {
             game.addUser(user);
             gameDAO.update(game);
         }
-        String fistName = user != null ? user.getFirstName(): userId.toString();
+        String fistName = user.getFirstName();
         List<String> chatIds = gamePlay.getGameMembersChatIds(gameId);
         String commonMessage = "Пользователь "+ fistName +" присоединился к игре";
         ArrayList<GameAnswer> answers = new ArrayList<>();
@@ -106,4 +112,16 @@ public class PokerDealer {
         return answers;
     }
 
+    private List<GameAnswer> getHelpText(Integer userId) {
+        ArrayList<GameAnswer> answers = new ArrayList<>();
+        String chatId = userId.toString();
+        answers.add(new GameAnswer(chatId, "Создать игру /create"));
+        answers.add(new GameAnswer(chatId, "Присоединиться к игре /join *код игры*"));
+        answers.add(new GameAnswer(chatId, "Начать игру /run"));
+        answers.add(new GameAnswer(chatId, "Сыграть блайнд /blind"));
+        answers.add(new GameAnswer(chatId, "Уравнять /call"));
+        answers.add(new GameAnswer(chatId, "Повысить /raise"));
+        answers.add(new GameAnswer(chatId, "Сбросить карты /fold"));
+        return answers;
+    }
 }

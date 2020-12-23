@@ -17,6 +17,17 @@ public class CardDAO implements IController<Card, Integer> {
         return result;
     }
 
+    /* Получить карту по параметрам */
+    public Card getCardByRankSuit(String rank, String suit) {
+        Session session = SessionFactoryCreator.getSessionFactory().openSession();
+        List<Card> result = (List<Card>) session.createQuery("From Card card where card.rank = :rank and card.suit = :suit")
+                .setParameter("rank", rank)
+                .setParameter("suit", suit)
+                .list();
+        session.close();
+        return result.size() > 0 ? result.get(0) : null;
+    }
+
     @Override
     public Card getEntityById(Integer id) {
         Session session = SessionFactoryCreator.getSessionFactory().openSession();
