@@ -92,17 +92,15 @@ public class PokerDealer {
         if (game.getState() != GameState.notStarted) {
             return gamePlay.getDefaultAnswer(userId, "Невозможно присоединиться к игре, которая уже идет");
         }
-        System.out.println(game.getUsers());
         if (!game.getUsers().contains(user)) {
             game.addUser(user);
             gameDAO.update(game);
         }
         String fistName = user != null ? user.getFirstName(): userId.toString();
-        List<String> chatIds = gamePlay.GetGameMembersChatIds(gameId);
+        List<String> chatIds = gamePlay.getGameMembersChatIds(gameId);
         String commonMessage = "Пользователь "+ fistName +" присоединился к игре";
         ArrayList<GameAnswer> answers = new ArrayList<>();
         for (String chatId: chatIds) {
-
             answers.add(new GameAnswer(chatId, commonMessage));
         }
         return answers;

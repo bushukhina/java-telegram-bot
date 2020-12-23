@@ -20,7 +20,7 @@ public class User {
     private int money;
     private int bet;
     @Column (name = "isactive")
-    private boolean isActive = false;
+    private boolean isActive = true;
 
     @ManyToMany(cascade = CascadeType.ALL,fetch=FetchType.EAGER)
     @Fetch(FetchMode.SELECT)
@@ -42,6 +42,7 @@ public class User {
         this.id = userId;
         this.chatId = chatId;
         this.firstName = firstName;
+        this.money = 500;
         cards = new ArrayList<>();
         games = new ArrayList<>();
     }
