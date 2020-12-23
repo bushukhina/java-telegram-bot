@@ -1,5 +1,8 @@
 package entities;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,13 +17,15 @@ public class Card {
     private String suit;
     private String rank;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL,fetch=FetchType.EAGER)
+    @Fetch(FetchMode.SELECT)
     @JoinTable(name = "user_cards",
             joinColumns = @JoinColumn(name = "card_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id"))
     private List<User> users;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL,fetch=FetchType.EAGER)
+    @Fetch(FetchMode.SELECT)
     @JoinTable(name = "game_cards",
             joinColumns = @JoinColumn(name = "card_id"),
             inverseJoinColumns = @JoinColumn(name = "game_id"))
@@ -65,6 +70,10 @@ public class Card {
 
     @Override
     public String toString() {
-        return rank + suit;
+        return "Card{" +
+                "id=" + id +
+                ", suit='" + suit + '\'' +
+                ", rank='" + rank + '\'' +
+                '}';
     }
 }

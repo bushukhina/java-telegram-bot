@@ -1,20 +1,15 @@
 package game;
 
-import java.util.ArrayList;
-
 public class GameAnswer {
-    public ArrayList<String> commonMessageReceivers;
-    public String commonMessageText;
+    public String receiver;
     public String messageText;
 
     public GameAnswer(
-        String messageText,
-        ArrayList<String> commonMessageReceivers,
-        String commonMessageText
+        String receiver,
+        String messageText
 
     ) {
         this.messageText = messageText;
-        this.commonMessageReceivers = commonMessageReceivers;
-        this.commonMessageText = commonMessageText;
+        this.receiver = receiver;
     }
 }

@@ -11,6 +11,8 @@ import org.telegram.telegrambots.exceptions.TelegramApiException;
 import org.telegram.telegrambots.exceptions.TelegramApiRequestException;
 import storage.*;
 
+import java.util.List;
+
 /*
 * Обертка для связи с телеграмом
 * */
@@ -80,11 +82,10 @@ public class MainBot extends TelegramLongPollingBot {
             String text = message.getText();
             String[] args = text.split(" ");
 
-            GameAnswer answer = pokerDealer.processRequest(message.getFrom().getId(), args);
+            List<GameAnswer> answers = pokerDealer.processRequest(message.getFrom().getId(), args);
 
-            sendMsg(chatId, answer.messageText);
-            for (String memberChatId : answer.commonMessageReceivers) {
-                sendMsg(memberChatId, answer.commonMessageText);
+            for (GameAnswer answer : answers) {
+                sendMsg(answer.receiver, answer.messageText);
             }
         }
     }

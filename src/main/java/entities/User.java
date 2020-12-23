@@ -1,5 +1,8 @@
 package entities;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+
 import javax.persistence.*;
 import java.util.List;
 import java.util.ArrayList;
@@ -19,13 +22,15 @@ public class User {
     @Column (name = "isactive")
     private boolean isActive = false;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL,fetch=FetchType.EAGER)
+    @Fetch(FetchMode.SELECT)
     @JoinTable (name = "user_cards",
             joinColumns = @JoinColumn (name = "user_id"),
             inverseJoinColumns = @JoinColumn (name = "card_id"))
     private List<Card> cards;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL,fetch=FetchType.EAGER)
+    @Fetch(FetchMode.SELECT)
     @JoinTable (name = "game_users",
         joinColumns = @JoinColumn (name = "user_id"),
         inverseJoinColumns = @JoinColumn (name = "game_id"))
@@ -110,4 +115,16 @@ public class User {
     }
 
     //При необходимости добавить ещё методов
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", chatId='" + chatId + '\'' +
+                ", money=" + money +
+                ", bet=" + bet +
+                ", isActive=" + isActive +
+                '}';
+    }
 }

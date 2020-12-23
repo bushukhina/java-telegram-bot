@@ -21,6 +21,7 @@ public class PokerDealer {
     UserDAO userDAO;
     GameDAO gameDAO;
     CardDAO cardDAO;
+    GamePlay gamePlay;
 
     CardHelper cardHelper = new CardHelper();
 
@@ -29,6 +30,7 @@ public class PokerDealer {
         gameDAO = new GameDAO();
         cardDAO = new CardDAO();
         initCards();
+        gamePlay = new GamePlay(gameDAO, userDAO, cardDAO);
     }
 
     public void initCards() {
@@ -42,83 +44,68 @@ public class PokerDealer {
         }
     }
 
-    public GameAnswer processRequest(Integer userId, String[] args) {
+    public List<GameAnswer> processRequest(Integer userId, String[] args) {
         String command = args.length > 0 ? args[0] : "";
         System.out.println(command);
         switch (command) {
             case "/help":
-                return answerByDefault("В будущем тут появится сообщение с информацией о командах :)");
+                return gamePlay.getDefaultAnswer(userId,"В будущем тут появится сообщение с информацией о командах :)");
             case "/start":
-                return answerByDefault("Привет, давай сыграем в покер?");
+                return gamePlay.getDefaultAnswer(userId,"Привет, давай сыграем в покер?");
             case "/create":
                 return createGame(userId);
             case "/join":
                 return joinGame(userId, args);
+            case "/run": // начать игру
+            case "/fold": // сброс карт
             case "/blind": // фиксированные 2 ставки в начале игры
             case "/call": //уравнять после райза
             case "/raise": // повысить ставки
-            case "/check": //не вносить денег к ставке, можно если
-                // ты первый или перед тобой тоже чеки
-            case "/fold": // сброс карт
-                return attendGame(userId, args);
+            case "/check": //не вносить денег к ставке, можно если ты первый или перед тобой тоже чеки
+                return gamePlay.attendGame(userId, args);
             default:
-                return answerByDefault("Некорректная команда");
+                return gamePlay.getDefaultAnswer(userId, "Некорректная команда");
         }
     }
 
-    /* Сделать ход */
-    public GameAnswer attendGame(long userId, String[] args) {
-
-        return null;
-    }
-
-    /* Сформировать ответ с заданным текстом */
-    public GameAnswer answerByDefault(String message) {
-        return new GameAnswer(message, new ArrayList<String>(),"");
-    }
-
     /* Создать игру */
-    public GameAnswer createGame(Integer userId) {
+    public List<GameAnswer> createGame(Integer userId) {
         UUID uuid= UUID.randomUUID();
         Game game = new Game(uuid, GameState.notStarted);
         User user = userDAO.getEntityById(userId);
         game.addUser(user);
         gameDAO.save(game);
-        GameAnswer answ = new GameAnswer(
-                "Вы создали игру с кодом: " + uuid,
-                new ArrayList<String>(), "");
-        return answ;
+        ArrayList<GameAnswer> answers = new ArrayList<>();
+        answers.add(new GameAnswer(userId.toString(),"Ты создал игру с кодом: "));
+        answers.add(new GameAnswer(userId.toString(), uuid.toString()));
+        return answers;
     }
 
     /* Присоединиться к игре */
-    public GameAnswer joinGame(Integer userId, String[] args) {
+    public List<GameAnswer> joinGame(Integer userId, String[] args) {
         // если меньше дувух, кидать ошибку
         String uuid = args[1];
 
         int gameId = gameDAO.getIdByUUID(java.util.UUID.fromString(uuid));
         Game game = gameDAO.getEntityById(gameId);
         User user = userDAO.getEntityById(userId);
+        if (game.getState() != GameState.notStarted) {
+            return gamePlay.getDefaultAnswer(userId, "Невозможно присоединиться к игре, которая уже идет");
+        }
+        System.out.println(game.getUsers());
         if (!game.getUsers().contains(user)) {
-            game.addUser(user); //Возможно, эту проверку нужно делать в другом месте
+            game.addUser(user);
+            gameDAO.update(game);
         }
         String fistName = user != null ? user.getFirstName(): userId.toString();
-        GameAnswer answ = new GameAnswer(
-                null,
-                GetGameMembersChatIds(gameId),
-                "Пользователь "+ fistName +" присоединился к игре");
-        return answ;
+        List<String> chatIds = gamePlay.GetGameMembersChatIds(gameId);
+        String commonMessage = "Пользователь "+ fistName +" присоединился к игре";
+        ArrayList<GameAnswer> answers = new ArrayList<>();
+        for (String chatId: chatIds) {
+
+            answers.add(new GameAnswer(chatId, commonMessage));
+        }
+        return answers;
     }
 
-    /* Получаем чаты в которые нужно отправить общие оповедения */
-    private ArrayList<String> GetGameMembersChatIds(int gameId) {
-        Game game = gameDAO.getEntityById(gameId);
-        List<User> users = game.getUsers();
-        ArrayList<String> codes = new ArrayList<>();
-        for (User user : users) {
-            if (user != null) { //зачем проверяем?
-                codes.add(user.getChatId());
-            }
-        }
-        return codes;
-    }
 }
