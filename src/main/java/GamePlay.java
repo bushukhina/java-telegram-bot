@@ -37,9 +37,6 @@ public class GamePlay {
         GameState state = game.getState();
         String command = args[0];
         System.out.println(state);
-//        if (command.equals("/fold")) {
-//            return fold(userId, game);
-//        }
         if (command.equals("/run") && state == GameState.notStarted) {
             return startGame(userId,game);
         }
@@ -58,6 +55,8 @@ public class GamePlay {
                 if (command.equals("/raise")) {
                     return raise(userId, game, bet);
                 }
+            } else {
+                return getDefaultAnswer(userId,"После /raise должно идти число, ставка до которой хочешь повысить");
             }
         }
         return getDefaultAnswer(userId,"Не умею так играть :( Проверь правила игры");
@@ -254,23 +253,7 @@ public class GamePlay {
         gameDAO.update(game);
     }
 
-    // todo проверка, что не конец круга или не один человек в игре
-//    private List<GameAnswer> fold(Integer userId, Game game) {
-//        User user = userDAO.getEntityById(userId);
-//        String fistName = user.getFirstName();
-//        user.setIsActive(false);
-//        userDAO.update(user);
-//        List<String> chatIds = getGameMembersChatIds(game.getId());
-//        String commonMessage = "Пользователь "+ fistName +" покинул игру";
-//        ArrayList<GameAnswer> answers = new ArrayList<>();
-//        for (String chatId: chatIds) {
-//            answers.add(new GameAnswer(chatId, commonMessage));
-//        }
-//        return answers;
-//    }
-
     /* get next user or null */
-    //todo доделать, если реализуем fold
     private Integer getNextUserId(int gameId, int maxBet) {
         int currIndex = orderStorage.gamePointer.get(gameId);
         List<User> orderedUsers = orderStorage.gameUsers.get(gameId);
@@ -291,10 +274,10 @@ public class GamePlay {
         Integer maxBet = 0;
         for (User user: users) {
             int bet = user.getBet();
-            System.out.print(user.getFirstName() +"'s bet "+bet+ ". ");
+//            System.out.print(user.getFirstName() +"'s bet "+bet+ ". ");
             maxBet = bet > maxBet ? bet : maxBet;
         }
-        System.out.println("Max bet " + maxBet);
+//        System.out.println("Max bet " + maxBet);
         return maxBet;
     }
 

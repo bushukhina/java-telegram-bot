@@ -57,11 +57,9 @@ public class PokerDealer {
             case "/join":
                 return joinGame(userId, args);
             case "/run": // начать игру
-            case "/fold": // сброс карт
             case "/blind": // фиксированные 2 ставки в начале игры
             case "/call": //уравнять после райза
             case "/raise": // повысить ставки
-            case "/check": //не вносить денег к ставке, можно если ты первый или перед тобой тоже чеки
                 return gamePlay.attendGame(userId, args);
             default:
                 return gamePlay.getDefaultAnswer(userId, "Некорректная команда");
