@@ -2,9 +2,7 @@ package helpers;
 
 import entities.Card;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public final class CardHelper {
@@ -118,4 +116,137 @@ public final class CardHelper {
     private static final String Queen = "Q"; // 10
     private static final String King = "K"; // 11
     private static final String Ace = "A"; // 12
+
+    private int calculateWinner(List<Card> cards) {
+        int result = 0;
+        Map<Integer,List<Card>> mapCards = cardToMap(cards);
+
+        boolean flagForDouble = false; // Флаг для определения флеша
+        boolean flagForTriple = false; // Флаг для определения флеша
+        boolean flash = getFlash(cards);
+
+        for(int card : mapCards.keySet())
+        {
+            boolean street = mapCards.get(card).size() == 1
+                    && mapCards.get(card+1).size() == 1
+                    && mapCards.get(card+2).size() == 1
+                    && mapCards.get(card+3).size() == 1
+                    && mapCards.get(card+4).size() == 1;
+
+            if (street) //Стрит - карты по порядку
+            {
+                result = 40 * (card+22) * 5;
+            }
+            if (flash) //Флеш - одиннаковой масти
+            {
+                result = 80 * (card+20) * 5;
+            }
+            if (mapCards.get(card).size() == 4) //Каре - 4 карты
+            {
+                result += 310 * (card+20) * 4;
+            }
+            if (getStreetFlash(mapCards, card)) //СтритФлеш - Одиннаковой масти и по порядку
+            {
+                result = 450 * (card+20) * 5;
+            }
+            if (getStreetFlash(mapCards, card) && card == 8) // ФлешРояль, тот же стритфлеш только начинается с 8ки.
+            {
+                result = 1000 * (card+20) * 5;
+            }
+            if (mapCards.get(card).size() == 2 && !flagForTriple) //Пара если до этого у нас была тройка, то у нас фулхаус.
+            {
+                flagForDouble = true;
+                result += 10 * (card+20) * 2;
+            }
+            if (mapCards.get(card).size() == 3 && !flagForDouble) //Трипла если до этого у нас была двойка, то у нас фулхаус.
+            {
+                flagForTriple = true;
+                result += 30 * (card+20) * 3;
+            }
+            if (flagForDouble && flagForTriple) //ФулХаус - двойка и тройка одновременно
+            {
+                result = 120 * (card+20) * 5;
+            }
+            result = card; // Если нету никаких комбинаций, то берется самая старшая
+        }
+        return result;
+    }
+
+    /**
+     * Метод, который преобразует карты в мапу типа [Номер карты:Сами карты] для удобного подсчета победителя
+     * @param cards
+     * @return Мапа
+     */
+    private Map<Integer, List<Card>> cardToMap(List<Card> cards){
+        Map<Integer, List<Card>> result = new HashMap<>();
+
+        for(Card card : cards)
+        {
+            if (result.get(Integer.parseInt(card.getRank())) == null)
+            {
+                result.put(Integer.parseInt(card.getRank()), Collections.singletonList(card));
+            }
+            else
+            {
+                result.get(Integer.parseInt(card.getRank())).add(card);
+                result.put(Integer.parseInt(card.getRank()), (result.get(Integer.parseInt(card.getRank()))));
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Определяем есть ли у игрока флеш.(5 одиннаковых мастей)
+     * @param cards
+     * @return является или нет
+     */
+    private boolean getFlash(List<Card> cards){
+        Map<String,Integer> result = new HashMap<>();
+        for(Card card : cards)
+        {
+            if (result.get(card.getSuit()) == null)
+            {
+                result.put(card.getSuit(), 1);
+            }
+            else
+            {
+                result.put(card.getSuit(), result.get(card.getSuit()) + 1);
+            }
+        }
+        for (int sumSuit : result.values())
+        {
+            if (sumSuit >= 5)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Определяем есть ли у игрока флеш.(5 одиннаковых мастей и по порядку)
+     * @param mapCard
+     * @param index
+     * @return является или нет
+     */
+    private boolean getStreetFlash(Map<Integer,List<Card>> mapCard, int index){
+        boolean result = true;
+        for (int i=0;i<4;i++)
+        {
+            if (!mapCard.get(index + i).get(1).getSuit().equals(mapCard.get(index).get(1).getSuit()))
+            {
+                result = false;
+                break;
+            }
+        }
+        for (int i=0;i<4;i++)
+        {
+            if (!mapCard.get(index + i).get(1).getSuit().equals(mapCard.get(index).get(1).getSuit()))
+            {
+                result = false;
+                break;
+            }
+        }
+        return result;
+    }
 }
