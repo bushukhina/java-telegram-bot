@@ -384,17 +384,21 @@ public class GamePlay {
         }
     }
     private User endGame(Game game){
-        List<Card> cardsInGameAndUser = new ArrayList<Card>(game.getCards());
+        List<Card> cardsInGameAndUser = new ArrayList<Card>();
         Map<Integer, User> resultGame = new HashMap<>();
         int maxPoint = 0;
         for (User user: game.getUsers()) // Вычисляем победителя
         {
+            cardsInGameAndUser.addAll(game.getCards());
             cardsInGameAndUser.addAll(user.getCards());
+
             resultGame.put(cardHelper.calculatePoints(cardsInGameAndUser), user);
+            
             if (maxPoint < cardHelper.calculatePoints(cardsInGameAndUser))
             {
                 maxPoint = cardHelper.calculatePoints(cardsInGameAndUser);
             }
+            cardsInGameAndUser.clear();
         }
         User userWinner = resultGame.get(maxPoint);
         int moneyWinner = userWinner.getMoney();
