@@ -97,7 +97,8 @@ public class GamePlay {
             }
             // set bet for first
             User firstUser = userDAO.getEntityById(userId);
-            firstUser.setBet(15);
+            int smallBlind = 15;
+            firstUser.setBet(smallBlind);
             userDAO.update(firstUser);
             // set state to big blind
             game.setState(GameState.bigBlind);
@@ -120,7 +121,8 @@ public class GamePlay {
         }
         // set bet for second
         User secondUser = userDAO.getEntityById(userId);
-        secondUser.setBet(30);
+        int bigBlind = 30;
+        secondUser.setBet(bigBlind);
         userDAO.update(secondUser);
         //to everyone
         addCommonMessages(game.getId(),
@@ -136,14 +138,12 @@ public class GamePlay {
         addCommonMessages(game.getId(), "Начался у круг торгов", answers);
 
         // invite next to trade (if next exists)
-        Integer maxBet = getMaxBet(game);
-        Integer nextUsersId = getNextUserId(game.getId(), maxBet);
-        if (nextUsersId != null) {
-            answers.add(new GameAnswer(nextUsersId.toString(),
-                    "Сделайте ставку /call или /raise *ставка*"));
-        } else {
-            orderStorage.gamePointer.put(game.getId(), 0);
-        }
+        getNextUserId(game.getId(), 30);
+
+        String chatId = getUserByIndex(game.getId(), orderStorage.gamePointer.get(game.getId()))
+                .getChatId();
+        answers.add(new GameAnswer(chatId,
+                "Сделайте ставку /call или /raise <ставка>"));
         return answers;
     }
 
@@ -160,6 +160,7 @@ public class GamePlay {
         User user = userDAO.getEntityById(userId);
         user.setBet(maxBet);
         userDAO.update(user);
+        getMaxBet(game);
         addCommonMessages(game.getId(),
                 user.getFirstName() + " уровнял(а) ставку до " + maxBet ,
                 answers);
@@ -176,7 +177,7 @@ public class GamePlay {
             if (game.getState() != GameState.showDown) {
                 addCommonMessages(game.getId(), "Новый круг торгов", answers);
                 String chatId = getUserByIndex(game.getId(), 0).getChatId();
-                answers.add(new GameAnswer(chatId, "Сделайте ставку /call или /raise *ставка*"));
+                answers.add(new GameAnswer(chatId, "Сделайте ставку /call или /raise <ставка>"));
             } else  {
                 //todo показать победителя и перевести деньги
 
@@ -186,7 +187,7 @@ public class GamePlay {
         } else {
             String chatId = getUserByIndex(game.getId(), orderStorage.gamePointer.get(game.getId()))
                     .getChatId();
-            answers.add(new GameAnswer(chatId, "Сделайте ставку /call или /raise *ставка*"));
+            answers.add(new GameAnswer(chatId, "Сделайте ставку /call или /raise <ставка>"));
         }
         return answers;
     }
@@ -200,23 +201,26 @@ public class GamePlay {
         }
         // update bet
         List<GameAnswer> answers = new ArrayList<>();
-        User user = userDAO.getEntityById(userId);
-        user.setBet(bet);
-        userDAO.update(user);
-        addCommonMessages(game.getId(),
-                user.getFirstName() + " повысил(а) ставку до " + bet,
-                answers);
 
         int maxBet = getMaxBet(game);
         if (maxBet >= bet) {
             answers.add(new GameAnswer(userId.toString(), "Ставка должна быть больше ставок в игре"));
         }
-
+        maxBet = bet;
+        // update bet
+        User user = userDAO.getEntityById(userId);
+        user.setBet(bet);
+        userDAO.update(user);
+        getMaxBet(game);
+        addCommonMessages(game.getId(),
+                user.getFirstName() + " повысил(а) ставку до " + bet,
+                answers);
+        // ask next to bet
         getNextUserId(game.getId(), maxBet);
         String chatId = getUserByIndex(
                 game.getId(),
                 orderStorage.gamePointer.get(game.getId())).getChatId();
-        answers.add(new GameAnswer(chatId, "Сделайте ставку /call или /raise *ставка*"));
+        answers.add(new GameAnswer(chatId, "Сделайте ставку /call или /raise <ставка>"));
         return answers;
     }
 
@@ -229,7 +233,6 @@ public class GamePlay {
         }
         game.deleteCards();
         gameDAO.update(game);
-        gameDAO.delete(game);
     }
 
     private void setNextState(Game game) {
@@ -288,8 +291,10 @@ public class GamePlay {
         Integer maxBet = 0;
         for (User user: users) {
             int bet = user.getBet();
+            System.out.print(user.getFirstName() +"'s bet "+bet+ ". ");
             maxBet = bet > maxBet ? bet : maxBet;
         }
+        System.out.println("Max bet " + maxBet);
         return maxBet;
     }
 

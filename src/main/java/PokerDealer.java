@@ -116,11 +116,11 @@ public class PokerDealer {
         ArrayList<GameAnswer> answers = new ArrayList<>();
         String chatId = userId.toString();
         answers.add(new GameAnswer(chatId, "Создать игру /create"));
-        answers.add(new GameAnswer(chatId, "Присоединиться к игре /join *код игры*"));
+        answers.add(new GameAnswer(chatId, "Присоединиться к игре /join <код игры>"));
         answers.add(new GameAnswer(chatId, "Начать игру /run"));
         answers.add(new GameAnswer(chatId, "Сыграть блайнд /blind"));
         answers.add(new GameAnswer(chatId, "Уравнять /call"));
-        answers.add(new GameAnswer(chatId, "Повысить /raise *ставка*"));
+        answers.add(new GameAnswer(chatId, "Повысить /raise <ставка>"));
         answers.add(new GameAnswer(chatId, "Сбросить карты /fold"));
         return answers;
     }

@@ -72,7 +72,10 @@ public class MainBot extends TelegramLongPollingBot {
             userDAO.save(new User(
                     id,
                     chatId,
-                    message.getFrom().getFirstName())
+                    message.getFrom().getFirstName(),
+                    500,
+                    0,
+                    true)
             );
         }
 

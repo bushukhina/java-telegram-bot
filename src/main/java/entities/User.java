@@ -20,7 +20,7 @@ public class User {
     private int money;
     private int bet;
     @Column (name = "isactive")
-    private boolean isActive = true;
+    private boolean isActive;
 
     @ManyToMany(cascade = CascadeType.ALL,fetch=FetchType.EAGER)
     @Fetch(FetchMode.SELECT)
@@ -38,11 +38,14 @@ public class User {
 
     protected User() {}
 
-    public User(Integer userId, String chatId, String firstName) { //добавить в конструктор ставку и деньги?
+    public User(Integer userId, String chatId, String firstName,
+                int money, int bet, boolean isActive) { //добавить в конструктор ставку и деньги?
         this.id = userId;
         this.chatId = chatId;
         this.firstName = firstName;
-        this.money = 500;
+        this.money = money;
+        this.bet = bet;
+        this.isActive = isActive;
         cards = new ArrayList<>();
         games = new ArrayList<>();
     }
@@ -91,24 +94,12 @@ public class User {
         cards.add(card);
     }
 
-    public void removeCard(Card card) {
-        cards.remove(card);
-    }
-
     public void deleteCards() {
         cards.clear();
     }
 
     public List<Game> getGames() {
         return games;
-    }
-
-    public void addGame(Game game) {
-        games.add(game);
-    }
-
-    public void removeGame(Game game) {
-        games.remove(game);
     }
 
     public void deleteGames() {
@@ -122,10 +113,8 @@ public class User {
         return "User{" +
                 "id=" + id +
                 ", firstName='" + firstName + '\'' +
-                ", chatId='" + chatId + '\'' +
                 ", money=" + money +
                 ", bet=" + bet +
-                ", isActive=" + isActive +
                 '}';
     }
 }
