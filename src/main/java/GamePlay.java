@@ -7,9 +7,12 @@ import entities.User;
 import game.GameAnswer;
 import game.GameState;
 import helpers.CardHelper;
+import org.telegram.telegrambots.api.objects.Update;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /*
 * Игровое взаимодействие
@@ -179,7 +182,13 @@ public class GamePlay {
                 answers.add(new GameAnswer(chatId, "Сделайте ставку /call или /raise <ставка>"));
             } else  {
                 //todo показать победителя и перевести деньги
-
+                User userWin = endGame(game);
+                addCommonMessages(game.getId(), "Игра закончена", answers);
+                String chatId = getUserByIndex(game.getId(), 0).getChatId();
+                answers.add(new GameAnswer(chatId, "Победил Пользователь с именем: "
+                        +userWin.getFirstName()+ " Поздравляем!"));
+                userDAO.update(userWin);
+                gameDAO.update(game);
                 // clear game
                  clearData(game);
             }
@@ -373,5 +382,28 @@ public class GamePlay {
         } catch (NumberFormatException e) {
             return false;
         }
+    }
+    private User endGame(Game game){
+        List<Card> cardsInGameAndUser = new ArrayList<Card>(game.getCards());
+        Map<Integer, User> resultGame = new HashMap<>();
+        int maxPoint = 0;
+        for (User user: game.getUsers()) // Вычисляем победителя
+        {
+            cardsInGameAndUser.addAll(user.getCards());
+            resultGame.put(cardHelper.calculatePoints(cardsInGameAndUser), user);
+            if (maxPoint < cardHelper.calculatePoints(cardsInGameAndUser))
+            {
+                maxPoint = cardHelper.calculatePoints(cardsInGameAndUser);
+            }
+        }
+        User userWinner = resultGame.get(maxPoint);
+        int moneyWinner = userWinner.getMoney();
+        for (User  user: game.getUsers()) //переводим бабки
+        {
+            moneyWinner += user.getBet();
+            user.setBet(0);
+        }
+        userWinner.setMoney(moneyWinner);
+        return userWinner;
     }
 }

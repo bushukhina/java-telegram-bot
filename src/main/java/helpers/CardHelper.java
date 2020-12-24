@@ -117,7 +117,7 @@ public final class CardHelper {
     private static final String King = "K"; // 11
     private static final String Ace = "A"; // 12
 
-    private int calculateWinner(List<Card> cards) {
+    public int calculatePoints(List<Card> cards) {
         int result = 0;
         Map<Integer,List<Card>> mapCards = cardToMap(cards);
 
