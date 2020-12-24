@@ -6,4 +6,5 @@ import java.util.concurrent.ConcurrentHashMap;
 public class GameOrderStorage {
     public final ConcurrentHashMap<Integer, List<User>> gameUsers = new ConcurrentHashMap();
 
+    public final ConcurrentHashMap<Integer, Integer> gamePointer = new ConcurrentHashMap();
 }

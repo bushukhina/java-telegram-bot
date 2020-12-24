@@ -37,9 +37,9 @@ public class GamePlay {
         GameState state = game.getState();
         String command = args[0];
         System.out.println(state);
-        if (command.equals("/fold")) {
-            return fold(userId, game);
-        }
+//        if (command.equals("/fold")) {
+//            return fold(userId, game);
+//        }
         if (command.equals("/run") && state == GameState.notStarted) {
             return startGame(userId,game);
         }
@@ -63,31 +63,14 @@ public class GamePlay {
         return getDefaultAnswer(userId,"Не умею так играть :( Проверь правила игры");
     }
 
-    private List<GameAnswer> fold(Integer userId, Game game) {
-        User user = userDAO.getEntityById(userId);
-        String fistName = user.getFirstName();
-        user.setIsActive(false);
-        userDAO.update(user);
-        List<String> chatIds = getGameMembersChatIds(game.getId());
-        String commonMessage = "Пользователь "+ fistName +" покинул игру";
-        ArrayList<GameAnswer> answers = new ArrayList<>();
-        for (String chatId: chatIds) {
-            answers.add(new GameAnswer(chatId, commonMessage));
-        }
-
-        // todo проверка, что не конец круга или не один человек в игре;
-        // todo если да, то перейти на следующий этап или раскрытие карт
-        return answers;
-    }
-
     /* Начать игру */
     private List<GameAnswer> startGame(Integer userId, Game game) {
         if (game.getUsers().size() < 2) {
             return getDefaultAnswer(userId, "Необходимо не менее 2 игроков. Пригласи друзей присоедениться с кодом игры");
         }
-        System.out.println(game.getUsers());
         if (!orderStorage.gameUsers.containsKey(game.getId())) {
             orderStorage.gameUsers.put(game.getId(), game.getUsers());
+            orderStorage.gamePointer.put(game.getId(), 0);
         }
         if (userId != getUserByIndex(game.getId(), 0).getId()) {
             return getDefaultAnswer(userId, "Дать старт может только создатель игры");
@@ -127,6 +110,8 @@ public class GamePlay {
             String secondUserChatId = getUserByIndex(game.getId(), 1).getChatId();
             answers.add(new GameAnswer(secondUserChatId,
                     "Поставь большой блайнд(30). Используй команду /blind"));
+            // следующий ход второго
+            orderStorage.gamePointer.put(game.getId(), 1);
             return answers;
         }
 
@@ -145,37 +130,176 @@ public class GamePlay {
         // distribute Cards
         distributeCards(game, answers);
 
-        // if next exists, set state to 1st street trade
-//        game.setState(GameState.preTrade);
-//        gameDAO.update(game);
-        // trade stared for everyone
-//        addCommonMessages(game.getId(), "Начался у круг торгов", answers);
-
+        // set state to 1st street trade
+        game.setState(GameState.preTrade);
+        gameDAO.update(game);
+        addCommonMessages(game.getId(), "Начался у круг торгов", answers);
 
         // invite next to trade (if next exists)
-//        User secondUser = game.getUsers().get(1);
-//        answers.add(new GameAnswer(secondUser.getChatId(),
-//                "Сделайте ставку"));
-//        answers.add(new GameAnswer(secondUser.getChatId(),
-//                "У вас на счету: " + secondUser.getMoney()));
-
-        // todo! проверка, что не конец круга
-        // todo! если да, то перейти на следующий этап
+        Integer maxBet = getMaxBet(game);
+        Integer nextUsersId = getNextUserId(game.getId(), maxBet);
+        if (nextUsersId != null) {
+            answers.add(new GameAnswer(nextUsersId.toString(),
+                    "Сделайте ставку /call или /raise *ставка*"));
+        } else {
+            orderStorage.gamePointer.put(game.getId(), 0);
+        }
         return answers;
     }
 
     private List<GameAnswer> call(Integer userId, Game game) {
-        // set state
+        // right user
+        int currIndex = orderStorage.gamePointer.get(game.getId());
+        User currUser = orderStorage.gameUsers.get(game.getId()).get(currIndex);
+        if (currUser.getId() != userId) {
+            return getDefaultAnswer(userId, "Не твой ход. Подожди сообщения");
+        }
+        List<GameAnswer> answers = new ArrayList<>();
+        // update bet
+        int maxBet = getMaxBet(game);
+        User user = userDAO.getEntityById(userId);
+        user.setBet(maxBet);
+        userDAO.update(user);
+        addCommonMessages(game.getId(),
+                user.getFirstName() + " уровнял(а) ставку до " + maxBet ,
+                answers);
 
-        // проверка, что не конец круга
-        // если да, то перейти на следующий этап
-        return null;
+        Integer nextUserId = getNextUserId(game.getId(), maxBet);
+
+        if (nextUserId == null) { // конец круга
+            orderStorage.gamePointer.put(game.getId(), 0);
+            // раздать карту на стол
+            String newCardMessage = distributeCardOnTable(game);
+            addCommonMessages(game.getId(), newCardMessage, answers);
+            // set state
+            setNextState(game);
+            if (game.getState() != GameState.showDown) {
+                addCommonMessages(game.getId(), "Новый круг торгов", answers);
+                String chatId = getUserByIndex(game.getId(), 0).getChatId();
+                answers.add(new GameAnswer(chatId, "Сделайте ставку /call или /raise *ставка*"));
+            } else  {
+                //todo показать победителя и перевести деньги
+
+                // clear game
+                 clearData(game);
+            }
+        } else {
+            String chatId = getUserByIndex(game.getId(), orderStorage.gamePointer.get(game.getId()))
+                    .getChatId();
+            answers.add(new GameAnswer(chatId, "Сделайте ставку /call или /raise *ставка*"));
+        }
+        return answers;
     }
 
     private List<GameAnswer> raise(Integer userId, Game game, int bet) {
-        // проверка, что не конец круга
-        // если да, то перейти на следующий этап
-        return null;
+        // right user
+        int currIndex = orderStorage.gamePointer.get(game.getId());
+        User currUser = orderStorage.gameUsers.get(game.getId()).get(currIndex);
+        if (currUser.getId() != userId) {
+            return getDefaultAnswer(userId, "Не твой ход. Подожди сообщения");
+        }
+        // update bet
+        List<GameAnswer> answers = new ArrayList<>();
+        User user = userDAO.getEntityById(userId);
+        user.setBet(bet);
+        userDAO.update(user);
+        addCommonMessages(game.getId(),
+                user.getFirstName() + " повысил(а) ставку до " + bet,
+                answers);
+
+        int maxBet = getMaxBet(game);
+        if (maxBet >= bet) {
+            answers.add(new GameAnswer(userId.toString(), "Ставка должна быть больше ставок в игре"));
+        }
+
+        getNextUserId(game.getId(), maxBet);
+        String chatId = getUserByIndex(
+                game.getId(),
+                orderStorage.gamePointer.get(game.getId())).getChatId();
+        answers.add(new GameAnswer(chatId, "Сделайте ставку /call или /raise *ставка*"));
+        return answers;
+    }
+
+    private void clearData(Game game) {
+        for(User user: game.getUsers()) {
+            user.deleteCards();
+            user.deleteGames();
+            user.setBet(0);
+            userDAO.update(user);
+        }
+        game.deleteCards();
+        gameDAO.update(game);
+        gameDAO.delete(game);
+    }
+
+    private void setNextState(Game game) {
+        GameState state = game.getState();
+        GameState nextState = GameState.preTrade;
+        if (state == GameState.preTrade) {
+            nextState = GameState.tradeSecond;
+        }
+        if (state == GameState.tradeSecond) {
+            nextState = GameState.tradeThird;
+        }
+        if (state == GameState.tradeThird) {
+            nextState = GameState.tradeFourth;
+        }
+        if (state == GameState.tradeFourth) {
+            nextState = GameState.showDown;
+        }
+        game.setState(nextState);
+        gameDAO.update(game);
+    }
+
+    // todo проверка, что не конец круга или не один человек в игре
+//    private List<GameAnswer> fold(Integer userId, Game game) {
+//        User user = userDAO.getEntityById(userId);
+//        String fistName = user.getFirstName();
+//        user.setIsActive(false);
+//        userDAO.update(user);
+//        List<String> chatIds = getGameMembersChatIds(game.getId());
+//        String commonMessage = "Пользователь "+ fistName +" покинул игру";
+//        ArrayList<GameAnswer> answers = new ArrayList<>();
+//        for (String chatId: chatIds) {
+//            answers.add(new GameAnswer(chatId, commonMessage));
+//        }
+//        return answers;
+//    }
+
+    /* get next user or null */
+    //todo доделать, если реализуем fold
+    private Integer getNextUserId(int gameId, int maxBet) {
+        int currIndex = orderStorage.gamePointer.get(gameId);
+        List<User> orderedUsers = orderStorage.gameUsers.get(gameId);
+        int sizeUsers = orderedUsers.size();
+
+        int nextUserIndex = (currIndex + 1) % sizeUsers;
+        int nextUserId = orderedUsers.get(nextUserIndex).getId();
+        orderStorage.gamePointer.put(gameId, nextUserIndex);
+
+        if (userDAO.getEntityById(nextUserId).getBet() == maxBet) {
+            return null;
+        }
+        return nextUserId;
+    }
+
+    private Integer getMaxBet(Game game) {
+        List<User> users = game.getUsers();
+        Integer maxBet = 0;
+        for (User user: users) {
+            int bet = user.getBet();
+            maxBet = bet > maxBet ? bet : maxBet;
+        }
+        return maxBet;
+    }
+
+    private String distributeCardOnTable(Game game) {
+        List<Card> usedCards = getGameUsersCards(game.getUsers());
+        usedCards.addAll(game.getCards());
+        Card newCard = cardHelper.getRandomNonExistingCard(usedCards);
+        game.addCard(newCard);
+        gameDAO.update(game);
+        return "Новая карта на столе " + newCard;
     }
 
     /* Раздать карманные карты */

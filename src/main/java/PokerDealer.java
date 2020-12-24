@@ -120,7 +120,7 @@ public class PokerDealer {
         answers.add(new GameAnswer(chatId, "Начать игру /run"));
         answers.add(new GameAnswer(chatId, "Сыграть блайнд /blind"));
         answers.add(new GameAnswer(chatId, "Уравнять /call"));
-        answers.add(new GameAnswer(chatId, "Повысить /raise"));
+        answers.add(new GameAnswer(chatId, "Повысить /raise *ставка*"));
         answers.add(new GameAnswer(chatId, "Сбросить карты /fold"));
         return answers;
     }
