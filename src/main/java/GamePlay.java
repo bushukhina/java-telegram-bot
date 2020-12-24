@@ -152,6 +152,9 @@ public class GamePlay {
     private List<GameAnswer> call(Integer userId, Game game) {
         // right user
         int currIndex = orderStorage.gamePointer.get(game.getId());
+        if (currIndex==0) {
+            return getDefaultAnswer(userId,"Нельзя уравнять в начале круга");
+        }
         User currUser = orderStorage.gameUsers.get(game.getId()).get(currIndex);
         if (currUser.getId() != userId) {
             return getDefaultAnswer(userId, "Не твой ход. Подожди сообщения");
